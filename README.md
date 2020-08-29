@@ -1,5 +1,5 @@
 # azure-kubernetes
-dummy app and notes for deploy at kubernetes cluster in azure
+dummy app and notes to deploy at kubernetes cluster in azure
 
 ## Notes
 [Here](notes.md)
