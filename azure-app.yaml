@@ -1,0 +1,78 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-sep-mongo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test-sep-mongo
+  template:
+    metadata:
+      labels:
+        app: test-sep-mongo
+    spec:
+      nodeSelector:
+        "beta.kubernetes.io/os": linux
+      containers:
+      - name: test-sep-mongo
+        image: mongo
+        ports:
+        - containerPort: 27017
+          name: mongo
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: test-sep-mongo
+spec:
+  ports:
+  - port: 27017
+  selector:
+    app: test-sep-mongo
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-sep-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test-sep-app
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  minReadySeconds: 5 
+  template:
+    metadata:
+      labels:
+        app: test-sep-app
+    spec:
+      nodeSelector:
+        "beta.kubernetes.io/os": linux
+      containers:
+      - name: test-sep-app
+        image: acrmarcial.azurecr.io/test-sep-app:v1
+        ports:
+        - containerPort: 5000
+        resources:
+          requests:
+            cpu: 250m
+          limits:
+            cpu: 500m
+        # env:
+        # - name: REDIS
+        #   value: "azure-vote-back"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: test-sep-app
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 5000
+  selector:
+    app: test-sep-app
